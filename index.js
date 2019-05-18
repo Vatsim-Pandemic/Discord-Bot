@@ -1,7 +1,5 @@
 const Discord = require('discord.js');
-const { googleapi } =require('googleapis');
 const { prefix, token, sheetID, departureCells } = require('./config.json');
-let { startingRow } = require('./config.json');
 const creds = require('./client-secret.json');
 const GoogleSpreadsheet = require('google-spreadsheet');
 let sheet = '';
