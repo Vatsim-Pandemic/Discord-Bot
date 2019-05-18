@@ -1,11 +1,13 @@
-const fs = require('fs');
 const Discord = require('discord.js');
-const { google } = require('googleapis');
-const { prefix, token, sheetID } = require('./config.json');
+const { googleapi } =require('googleapis');
+const { prefix, token, sheetID, departureCells } = require('./config.json');
+let { startingRow } = require('./config.json');
 const creds = require('./client-secret.json');
-const GoogleSpreadsheet = require('google-spreadsheet')
+const GoogleSpreadsheet = require('google-spreadsheet');
+let sheet = '';
 
 const doc = new GoogleSpreadsheet(sheetID);
+const client = new Discord.Client();
 
 doc.useServiceAccountAuth(creds, (err) => {
 	if (err) {
@@ -14,7 +16,9 @@ doc.useServiceAccountAuth(creds, (err) => {
 	console.log('Auth Sucessful');
 });
 
-const client = new Discord.Client();
+doc.getInfo(function(err, info) {
+	sheet = info.worksheets[0];
+});
 
 client.once('ready', () => {
 	console.log('Ready!');
@@ -27,36 +31,28 @@ client.on('message', message => {
 	const command = args.shift().toLowerCase();
 
 	if (command === 'dep') {
-		const depData = [message.author, args, message.createdAt.toUTCString()];
+		const depData = [message.author.username, args[0], args[1], message.createdAt.toUTCString(), args[2]];
 
-		// Getting cells back from tab #2 of the file
-		doc.getCells(1, callback);
+		sheet.getCells({
+			'min-row': startingRow,
+			'min-col': 16,
+			'max-col': 23,
+		}, (err, cells) => {
+			if(err) throw err;
 
-		// Callback function determining what to do with the information
-		function callback(err, rows) {
-			
-			// Logging the output or error, depending on how the request went
-			console.log(rows);
-			console.log(err);
-		}
-
+			for (let i = 0; i < 5; i++) {
+				const cell = cells[departureCells[i]];
+				cell.value = depData[i];
+				cell.save();
+			}
+			message.channel.send('you have been dispached.');
+			startingRow++;
+		});
 	}
 	else if(command === 'arr') {
 		const arrData = [message.author, args[3], message.createdAt.toUTCString()];
 
-		// doc.useServiceAccountAuth(creds, function(err) {
 
-		// Getting cells back from tab #2 of the file
-		doc.getCells(1, callback);
-
-		// Callback function determining what to do with the information
-		function callback(err, rows) {
-
-			// Logging the output or error, depending on how the request went
-			console.log(rows);
-			console.log(err);
-		}
-		// });
 	}
 
 });
