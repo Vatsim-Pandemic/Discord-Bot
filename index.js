@@ -1,10 +1,10 @@
 const Discord = require('discord.js');
 const { prefix, token, sheetID, departureCells } = require('./config.json');
 const creds = require('./client-secret.json');
-const GoogleSpreadsheet = require('google-spreadsheet');
+// const GoogleSpreadsheet = require('google-spreadsheet');
 let sheet = '';
 
-const doc = new GoogleSpreadsheet(sheetID);
+// const doc = new GoogleSpreadsheet(sheetID);
 const client = new Discord.Client();
 
 doc.useServiceAccountAuth(creds, (err) => {
@@ -14,9 +14,9 @@ doc.useServiceAccountAuth(creds, (err) => {
 	console.log('Auth Sucessful');
 });
 
-doc.getInfo(function(err, info) {
-	sheet = info.worksheets[0];
-});
+// doc.getInfo(function(err, info) {
+//	sheet = info.worksheets[0];
+// });
 
 client.once('ready', () => {
 	console.log('Ready!');
