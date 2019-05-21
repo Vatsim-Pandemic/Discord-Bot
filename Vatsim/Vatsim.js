@@ -36,12 +36,15 @@ async function init() {
 			link = link.replace("\r", "");
 			clientData.push(link);
 		};
+		
 	}
 
 	vatsimTimer = setInterval(update, TWO_MINUTE_INTERVAL);
 
 	update(); //Get data from Vatsim
 }
+
+init();
 
 /**
  * Update data within each individual parser by giving a random link given by the original vatsim link
@@ -71,9 +74,8 @@ function getPilot(callsign){
 }
 
 module.exports = {
-	init: init,
 	update: update,
-	getPilot: getPilot
+	getPilot: getPilot,
 }
 
 async function getWebsiteData(host, path) {
