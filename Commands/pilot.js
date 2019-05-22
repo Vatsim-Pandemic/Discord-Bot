@@ -1,16 +1,24 @@
-const Discord = require("discord.js");
+const { PIEClient } = require("../index.js");
+const { Message, MessageEmbed } = require("discord.js");
 
 module.exports = {
     name: "pilot",
     aliases: [],    
     helpDesc: "Get a pilot from Vatsim",
     helpTitle: "Pilot <Callsign>",
-    run: async (bot, message, args) => {
-        let embed = new Discord.MessageEmbed();
+    
+    /**
+     * @param { PIEClient } pie PIEClient
+     * @param { string[] } args string array seperated by spaces
+     * @param { Message } message message
+     */
+    run: async (pie, args, message) => {
+        let embed = new MessageEmbed();
         let pilot;
         try{
-            pilot = bot.Vatsim.getPilot(args[1]);
+            pilot = pie.vatsim.getPilot(args[0]);
         } catch (err){
+            console.error(err);
             embed.setTitle("Pilot not found!")
             .addField(":(");
         }
@@ -25,6 +33,5 @@ module.exports = {
 
 
         message.channel.send({embed: embed});
-
     }
 }

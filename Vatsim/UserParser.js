@@ -43,6 +43,7 @@ function parsePilotController(line) {
 }
 
 function getPilot(callsign) {
+	console.log(callsign);
 	if(pilots.has(callsign)) return pilots.get(callsign);
 	throw new Error("Pilot not found");
 }
@@ -131,14 +132,20 @@ class VatsimPilot extends VatsimUser {
 	}
 
 	async getAirports(dep, arr) {
-		if(!this.callsign.startsWith("AAL")) return;
-		this.departure = await FSHost.getAirport(dep);
-		this.arrival = await FSHost.getAirport(arr);
+		//if(!this.callsign.startsWith("AAL")) return;
+		this.departure = await FSHost.getAirport(dep).catch((err) => {
+			console.error(err);
+			return;
+		});
+		this.arrival = await FSHost.getAirport(arr).catch((err) => {
+			console.error(err);
+			return;
+		});
 		this.updateDepartureArrival();
 	}
 
 	updateDepartureArrival() {
-		if(this.arrival && this.departure) {
+		if(this.arrival && this.departure && this.departure.data && this.arrival.data) {
 			try {
 				// Check if departed
 				if(!this.departed) {

@@ -1,7 +1,10 @@
-export function loadCommands() {
-	commands.clear();
+const { readdirSync } = require('fs');
 
-	const files = fs.readdirSync(`./Commands/`);
+function loadCommands(client) {
+	client.commands.clear();
+	client.aliases.clear();
+
+	const files = readdirSync(`./Commands/`);
 
 	console.log("loading " + files.length + " commands");
 
@@ -11,14 +14,25 @@ export function loadCommands() {
 		const command = require(`./Commands/${file}`);
 
 		// Bind the key to the command.
-		commands.set(key, command);
+		client.commands.set(key, command);
 
 		if(command.aliases) {
 			command.aliases.forEach(alias => {
 				// Set the alias to the command name/key to allow command reloading without updating aliases
-				aliases.set(alias, key);
+				client.aliases.set(alias, key);
 			});
 		}
 
 	});
+}
+
+function sleep(ms) {
+	return new Promise((resolve) => {
+		setTimeout(resolve, ms);
+	});
+}
+
+module.exports = {
+	loadCommands,
+	sleep,
 }

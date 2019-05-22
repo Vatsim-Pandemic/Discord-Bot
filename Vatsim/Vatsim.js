@@ -13,7 +13,7 @@ const vatsimStatus = {
 const clientData = [];
 let statusData;
 
-const vatsimTimer;
+let vatsimTimer;
 
 /**
  * Use the Vatsim link to get all of the links which we can get information from.
@@ -62,7 +62,7 @@ async function update(){
 
 	UserParser.parseURL(userData);
 
-	Console.log("Updated User Info");
+	console.log("Updated User Info");
 }
 
 function getPilot(callsign){
@@ -80,7 +80,7 @@ module.exports = {
 
 async function getWebsiteData(host, path) {
 	return new Promise((resolve, reject) => {
-		Console.log(`Contacting: ${host}`);
+		console.log(`Contacting: ${host}`);
 
 		data = "";
 

@@ -1,7 +1,10 @@
-const Discord = require('discord.js');
+const { Client, Collection } = require('discord.js');
+const Vatsim = require('./Vatsim/Vatsim.js');
+const Util = require('./util.js');
+
 const { prefix, token, sheetID, departureCells } = require('./config.json');
 const creds = require('./client-secret.json');
-const fs = require('fs');
+
 // const GoogleSpreadsheet = require('google-spreadsheet');
 let sheet = '';
 
@@ -18,22 +21,30 @@ let sheet = '';
 //	sheet = info.worksheets[0];
 // });
 
-class PIEClient {
+class PIEClient extends Client {
 	constructor() {
-		this.client = new Discord.Client();
-		this.commands = new Discord.Collection();
-		this.aliases = new Discord.Collection();
-		this.vatsim = require(`./Vatsim/Vatsim.js`);
+		super();
 
-		this.client.once("ready", onReady);
-		this.client.on("message", onMessage);
+		this.commands = new Collection();
+		this.aliases = new Collection();
+		this.vatsim = Vatsim;
+		this.util = Util;
 
-		this.client.login(token);
+		this.once("ready", onReady);
+		this.on("message", onMessage);
+
+		this.login(token);
 	}
 }
 
+const client = new PIEClient();
+
+module.exports = {
+	PIEClient : PIEClient,
+}
+
 function onReady() {
-	loadCommands();
+	client.util.loadCommands(client);
 
 	console.log('Ready!');
 }
@@ -70,12 +81,12 @@ function onMessage(message) {
 	}
 	else {
 		// Replace the commandName with the full commandName
-		if(aliases.has(commandName)) commandName = aliases.get(commandName);
+		if(client.aliases.has(commandName)) commandName = client.aliases.get(commandName);
 		
 		// Fail silently if the command given is not in the map
-		if(!commands.has(commandName)) return;
+		if(!client.commands.has(commandName)) return;
 
-		const command = commands.get(commandName);
+		const command = client.commands.get(commandName);
 
 		if(!command.run) return message.channel.send("Command contains no run method");
 

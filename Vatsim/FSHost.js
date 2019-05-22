@@ -1,5 +1,6 @@
 const https = require("https");
 const async = require("async");
+const Util = require("../util.js");
 
 module.exports = {
 	getAirport: getAirport,
@@ -34,16 +35,19 @@ function downloadAirport(icao, callback) {
 			body += data;
 		});
 
-		res.on("end", () => {
+		res.on("end", async () => {
 			try {
 				body = JSON.parse(body);
 			}
 			catch(err) {
-				console.err(err);
-				callback(err);
+				await Util.sleep(60000);
+				return downloadAirport(icao, callback);
 			}
 
+			if(body.error) return callback(new Error(icao + " not found"));
+
 			airportMap.set(icao, body);
+			//console.log(JSON.stringify(body));
 			return callback(undefined, body);
 		});
 	});
