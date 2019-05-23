@@ -1,25 +1,11 @@
 const { Client, Collection } = require('discord.js');
 const Vatsim = require('./Vatsim/Vatsim.js');
 const Util = require('./util.js');
+const dotenv = require('dotenv');
 
-const { prefix, token, sheetID, departureCells } = require('./config.json');
-const creds = require('./client-secret.json');
+dotenv.config();
 
-// const GoogleSpreadsheet = require('google-spreadsheet');
-let sheet = '';
-
-// const doc = new GoogleSpreadsheet(sheetID);
-
-// doc.useServiceAccountAuth(creds, (err) => {
-// 	if (err) {
-// 		throw err;
-// 	}
-// 	console.log('Auth Sucessful');
-// });
-
-// doc.getInfo(function(err, info) {
-//	sheet = info.worksheets[0];
-// });
+const prefix = process.env.PREFIX;
 
 class PIEClient extends Client {
 	constructor() {
@@ -33,7 +19,7 @@ class PIEClient extends Client {
 		this.once("ready", onReady);
 		this.on("message", onMessage);
 
-		this.login(token);
+		this.login(process.env.TOKEN);
 	}
 }
 
