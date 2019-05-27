@@ -1,22 +1,24 @@
 const Discord = require('discord.js');
-const { prefix, token, sheetID, departureCells } = require('./config.json');
+const { prefix, token, spreadsheetId, range, valueInputOption } = require('./config.json');
 const creds = require('./client-secret.json');
-// const GoogleSpreadsheet = require('google-spreadsheet');
-let sheet = '';
+const { JWT } = require('google-auth-library');
+const { google } = require('googleapis');
 
-// const doc = new GoogleSpreadsheet(sheetID);
 const client = new Discord.Client();
 
-doc.useServiceAccountAuth(creds, (err) => {
-	if (err) {
-		throw err;
-	}
-	console.log('Auth Sucessful');
+const gClient = new JWT(
+	creds.client_email,
+	null,
+	creds.private_key,
+	['https://www.googleapis.com/auth/spreadsheets'],
+);
+
+const auth = gClient.authorize(function(err) {
+	if(err) throw err;
+	else console.log('Sucess');
 });
 
-// doc.getInfo(function(err, info) {
-//	sheet = info.worksheets[0];
-// });
+let sheets = google.sheets({ version: 'v4', auth });
 
 client.once('ready', () => {
 	console.log('Ready!');
@@ -29,23 +31,27 @@ client.on('message', message => {
 	const command = args.shift().toLowerCase();
 
 	if (command === 'dep') {
-		const depData = [message.author.username, args[0], args[1], message.createdAt.toUTCString(), args[2]];
+		const values = [
+			[message.author.username, args[0], args[1], message.createdAt.toUTCString(), null, args[2]],
+		  ];
 
-		sheet.getCells({
-			'min-row': startingRow,
-			'min-col': 16,
-			'max-col': 23,
-		}, (err, cells) => {
-			if(err) throw err;
-
-			for (let i = 0; i < 5; i++) {
-				const cell = cells[departureCells[i]];
-				cell.value = depData[i];
-				cell.save();
+		  const resource = {
+			values,
+		  };
+		  sheets.spreadsheets.values.update({
+			spreadsheetId,
+			range,
+			valueInputOption,
+			resource,
+		  }, (err, result) => {
+			if (err) {
+			  // Handle error
+			  console.log(err);
+			} else {
+			  console.log('%d cells updated.', result.updatedCells);
 			}
-			message.channel.send('you have been dispached.');
-			startingRow++;
-		});
+		  });
+
 	}
 	else if(command === 'arr') {
 		const arrData = [message.author, args[3], message.createdAt.toUTCString()];
