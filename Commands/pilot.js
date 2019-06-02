@@ -16,7 +16,7 @@ module.exports = {
         let embed = new MessageEmbed();
         let pilot;
         try{
-            pilot = pie.vatsim.getPilot(args[0]);
+            //pilot = pie.vatsim.getPilot(args[0]);
         } catch (err){
             console.error(err);
             embed.setTitle("Pilot not found!")

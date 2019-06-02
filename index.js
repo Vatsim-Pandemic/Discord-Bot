@@ -1,14 +1,27 @@
 const { Client, Collection } = require('discord.js');
-const { prefix, token, spreadsheetId, range, valueInputOption } = require('./config.json');
+const { prefix, spreadsheetId, range, valueInputOption } = require('./config.json');
 const { JWT } = require('google-auth-library');
 const { google } = require('googleapis');
-const Vatsim = require('./Vatsim/Vatsim.js');
+//const Vatsim = require('./Vatsim/Vatsim.js');
 const Util = require('./util.js');
 const dotenv = require('dotenv');
+const googleAuth = require('./GoogleAuth.js');
 
 dotenv.config();
 
-const prefix = process.env.PREFIX;
+// const gClient = new JWT(
+// 	process.env.CLIENT_EMAIL,
+// 	null,
+// 	process.env.PRIVATE_KEY,
+// 	['https://www.googleapis.com/auth/spreadsheets'],
+// );
+
+// const auth = gClient.authorize(function(err) {
+// 	if(err) throw err;
+// 	else console.log('Sucess');
+// });
+
+// let sheets = google.sheets({ version: 'v4', auth });
 
 class PIEClient extends Client {
 	constructor() {
@@ -16,7 +29,7 @@ class PIEClient extends Client {
 
 		this.commands = new Collection();
 		this.aliases = new Collection();
-		this.vatsim = Vatsim;
+		//this.vatsim = Vatsim;
 		this.util = Util;
 
 		this.once("ready", onReady);
@@ -32,22 +45,12 @@ module.exports = {
 	PIEClient : PIEClient,
 }
 
-const gClient = new JWT(
-	creds.client_email,
-	null,
-	creds.private_key,
-	['https://www.googleapis.com/auth/spreadsheets'],
-);
-
-const auth = gClient.authorize(function(err) {
-	if(err) throw err;
-	else console.log('Sucess');
-});
-
-let sheets = google.sheets({ version: 'v4', auth });
-
-function onReady() {
+async function onReady() {
 	client.util.loadCommands(client);
+
+	const auth = await googleAuth.getGoogleAuth();
+
+	client.sheets = google.sheets({version: 'v4', auth });
 
 	console.log('Ready!');
 }
@@ -58,7 +61,7 @@ function onMessage(message) {
 	const args = message.content.slice(prefix.length).split(/ +/);
 	let commandName = args.shift().toLowerCase();
 
-	if (command === 'dep') {
+	if (commandName === 'dep') {
 		const values = [
 			[message.author.username, args[0], args[1], message.createdAt.toUTCString(), null, args[2]],
 		  ];
@@ -66,7 +69,7 @@ function onMessage(message) {
 		  const resource = {
 			values,
 		  };
-		  sheets.spreadsheets.values.update({
+		  client.sheets.spreadsheets.values.update({
 			spreadsheetId,
 			range,
 			valueInputOption,
@@ -76,7 +79,7 @@ function onMessage(message) {
 			  // Handle error
 			  console.log(err);
 			} else {
-			  console.log('%d cells updated.', result.updatedCells);
+			  console.log('%d cells updated.', result.data.updatedCells);
 			}
 		  });
 	}
