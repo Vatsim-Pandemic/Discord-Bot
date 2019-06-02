@@ -43,7 +43,6 @@ function parsePilotController(line) {
 }
 
 function getPilot(callsign) {
-	console.log(callsign);
 	if(pilots.has(callsign)) return pilots.get(callsign);
 	throw new Error("Pilot not found");
 }

@@ -15,21 +15,21 @@ module.exports = {
     run: async (pie, args, message) => {
         let embed = new MessageEmbed();
         let pilot;
-        try{
+        try {
             pilot = pie.vatsim.getPilot(args[0]);
-        } catch (err){
+        } catch (err) {
             console.error(err);
             embed.setTitle("Pilot not found!")
             .addField(":(");
         }
 
         if(pilot != undefined)
-        embed.setTitle(`${pilot.callsign} - ${pilot.realName} (${pilot.cid})`)
-            .addField("Planned Route", `${pilot.plannedDepartingAirport} - ${pilot.plannedDestinationAirport} (FL${pilot.plannedAltitude / 100})`)
-            .addField("Aircraft", pilot.plannedAircraft)
-            .addField("Altitude", pilot.altitude)
-            .addField("Has Departed?", pilot.departed)
-            .addField("Has Arrived?", pilot.arrived);
+            embed.setTitle(`${pilot.callsign} - ${pilot.realName} (${pilot.cid})`)
+                .addField("Planned Route", `${pilot.plannedDepartingAirport} - ${pilot.plannedDestinationAirport} (FL${pilot.plannedAltitude / 100})`)
+                .addField("Aircraft", pilot.plannedAircraft)
+                .addField("Altitude", pilot.altitude)
+                .addField("Has Departed?", pilot.departed)
+                .addField("Has Arrived?", pilot.arrived);
 
 
         message.channel.send({embed: embed});
