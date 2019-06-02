@@ -52,7 +52,12 @@ function onMessage(message) {
 
 	if(!command.run) return message.channel.send("Command contains no run method");
 
-	command.run(client, args, message);
+	try {
+		command.run(client, args, message);
+	} catch (err) {
+		// TODO: Tell user that an error occured maybe?
+		console.err(err);
+	}
 }
 
 module.exports = {

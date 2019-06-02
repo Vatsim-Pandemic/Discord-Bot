@@ -84,7 +84,20 @@ function editSheets(client, range, values) {
     });
 }
 
+async function readSheets(client, range) {
+    return new Promise((res, rej) => {
+        client.sheets.spreadsheets.values.get({
+            spreadsheetId,
+            range,
+        }, (err, result) => {
+            if(err) rej(err);
+            res(result);
+        });
+    });
+}
+
 module.exports = {
     getGoogleAuth,
     editSheets,
+    readSheets,
 }

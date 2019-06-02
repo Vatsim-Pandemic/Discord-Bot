@@ -17,7 +17,7 @@ module.exports = {
         const values = [
 			[message.createdAt.toUTCString(), "Bot works"],
 		];
-        
+
         // TODO: Code which puts it in the last row possible and/or checks for a not duplicate entry
         // Also - check that they are on vatsim?
         editSheets(pie, "V6:W6", values);
