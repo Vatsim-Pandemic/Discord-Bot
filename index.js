@@ -1,4 +1,7 @@
 const { Client, Collection } = require('discord.js');
+const { prefix, token, spreadsheetId, range, valueInputOption } = require('./config.json');
+const { JWT } = require('google-auth-library');
+const { google } = require('googleapis');
 const Vatsim = require('./Vatsim/Vatsim.js');
 const Util = require('./util.js');
 const dotenv = require('dotenv');
@@ -29,6 +32,20 @@ module.exports = {
 	PIEClient : PIEClient,
 }
 
+const gClient = new JWT(
+	creds.client_email,
+	null,
+	creds.private_key,
+	['https://www.googleapis.com/auth/spreadsheets'],
+);
+
+const auth = gClient.authorize(function(err) {
+	if(err) throw err;
+	else console.log('Sucess');
+});
+
+let sheets = google.sheets({ version: 'v4', auth });
+
 function onReady() {
 	client.util.loadCommands(client);
 
@@ -41,24 +58,27 @@ function onMessage(message) {
 	const args = message.content.slice(prefix.length).split(/ +/);
 	let commandName = args.shift().toLowerCase();
 
-	if (commandName === 'dep') {
-		const depData = [message.author.username, args[0], args[1], message.createdAt.toUTCString(), args[2]];
+	if (command === 'dep') {
+		const values = [
+			[message.author.username, args[0], args[1], message.createdAt.toUTCString(), null, args[2]],
+		  ];
 
-		// sheet.getCells({
-		// 	'min-row': startingRow,
-		// 	'min-col': 16,
-		// 	'max-col': 23,
-		// }, (err, cells) => {
-		// 	if(err) throw err;
-
-		// 	for (let i = 0; i < 5; i++) {
-		// 		const cell = cells[departureCells[i]];
-		// 		cell.value = depData[i];
-		// 		cell.save();
-		// 	}
-		// 	message.channel.send('you have been dispached.');
-		// 	startingRow++;
-		// });
+		  const resource = {
+			values,
+		  };
+		  sheets.spreadsheets.values.update({
+			spreadsheetId,
+			range,
+			valueInputOption,
+			resource,
+		  }, (err, result) => {
+			if (err) {
+			  // Handle error
+			  console.log(err);
+			} else {
+			  console.log('%d cells updated.', result.updatedCells);
+			}
+		  });
 	}
 	else if(commandName === 'arr') {
 		const arrData = [message.author, args[3], message.createdAt.toUTCString()];
