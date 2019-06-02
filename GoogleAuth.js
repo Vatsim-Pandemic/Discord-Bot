@@ -1,6 +1,8 @@
 const { google } = require('googleapis');
 const { readFile, writeFile } = require('fs');
 const readLine = require('readline');
+const { PIEClient } = require("./index.js");
+const { spreadsheetId, valueInputOption } = require('./config.json');
 
 const SCOPES = ["https://www.googleapis.com/auth/spreadsheets"];
 
@@ -55,9 +57,34 @@ async function authorize(oAuth2Client){
             });
         });
     });
+}
 
+/**
+ * @param { PIEClient } client
+ * @param { string } range 
+ * @param { string[] } values 
+ */
+function editSheets(client, range, values) {
+    const resource = {
+        values,
+    };
+
+    client.sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range,
+        valueInputOption,
+        resource,
+    }, (err, result) => {
+        if (err) {
+            // Handle error
+            console.log(err);
+        } else {
+            console.log('%d cells updated.', result.data.updatedCells);
+        }
+    });
 }
 
 module.exports = {
     getGoogleAuth,
+    editSheets,
 }
