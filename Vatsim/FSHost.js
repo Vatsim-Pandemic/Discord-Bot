@@ -7,11 +7,13 @@ module.exports = {
 };
 
 const airportMap = new Map();
+const failedAirportMap = new Map();
 const queue = async.queue(downloadAirport, 2);
 
 
 function downloadAirport(icao, callback) {
 	if(airportMap.has(icao)) return callback(undefined, airportMap.get(icao));
+	if(failedAirportMap.has(icao)) return callback(new Error(icao + " not found previously"));
 
 	const options = {
 		host: "fshub.io",
@@ -44,7 +46,10 @@ function downloadAirport(icao, callback) {
 				return downloadAirport(icao, callback);
 			}
 
-			if(body.error) return callback(new Error(icao + " not found"));
+			if(body.error) {
+				failedAirportMap.set(icao, body);
+				return callback(new Error(icao + " not found"));
+			}
 
 			airportMap.set(icao, body);
 			//console.log(JSON.stringify(body));

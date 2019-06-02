@@ -135,10 +135,12 @@ class VatsimPilot extends VatsimUser {
 		//if(!this.callsign.startsWith("AAL")) return;
 		this.departure = await FSHost.getAirport(dep).catch((err) => {
 			console.error(err);
+			this.airportDetectionFailed = true;
 			return;
 		});
 		this.arrival = await FSHost.getAirport(arr).catch((err) => {
 			console.error(err);
+			this.airportDetectionFailed = true;
 			return;
 		});
 		this.updateDepartureArrival();
@@ -207,7 +209,7 @@ class VatsimPilot extends VatsimUser {
 			this.arrived = false;
 			this.getAirports(tempDep, tempArr);
 		}
-		else {
+		else if (!this.airportDetectionFailed) {
 			this.updateDepartureArrival();
 		}
 
