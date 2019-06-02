@@ -1,7 +1,7 @@
 const { Client, Collection } = require('discord.js');
 const { prefix } = require('./config.json');
 const { google } = require('googleapis');
-//const Vatsim = require('./Vatsim/Vatsim.js');
+const Vatsim = require('./Vatsim/Vatsim.js');
 const Util = require('./util.js');
 const dotenv = require('dotenv');
 const googleAuth = require('./GoogleAuth.js');
@@ -14,7 +14,7 @@ class PIEClient extends Client {
 
 		this.commands = new Collection();
 		this.aliases = new Collection();
-		//this.vatsim = Vatsim;
+		this.vatsim = Vatsim;
 		this.util = Util;
 
 		this.once("ready", onReady);

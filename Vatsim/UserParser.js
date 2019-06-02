@@ -132,7 +132,7 @@ class VatsimPilot extends VatsimUser {
 	}
 
 	async getAirports(dep, arr) {
-		//if(!this.callsign.startsWith("AAL")) return;
+		if( !(this.callsign.startsWith("IHS") || this.callsign.startsWith("UNO"))) return;
 		this.departure = await FSHost.getAirport(dep).catch((err) => {
 			console.error(err);
 			this.airportDetectionFailed = true;
