@@ -17,12 +17,10 @@ class PIEClient extends Client {
 		this.vatsim = Vatsim;
 		this.util = Util;
 
+		this.vatsim.init(twoMinuteTimer);
+
 		this.once("ready", onReady);
 		this.on("message", onMessage);
-
-		this.twoMinTimer = setInterval(twoMinuteTimer, 120000);
-
-		twoMinuteTimer();
 
 		this.login(process.env.TOKEN);
 	}
@@ -114,7 +112,7 @@ async function twoMinuteTimer() {
 
 	googleAuth.editSheets(client, "P3" + ":X", flights);
 
-
+	client.emit("pilotInfoUpdate");
 }
 
 module.exports = {

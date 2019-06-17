@@ -5,7 +5,7 @@ const FSHost = require('./FSHost.js');
 
 const pilots = new Map();
 
-function parseURL(url) {
+async function parseURL(url) {
 	const lines = url.split(newLine);
 
 	let parsePilots = false;
@@ -24,6 +24,7 @@ function parseURL(url) {
 				pilotCounter++;
 				if(!pilots.has(line[0])) {
 					const pilot = new VatsimPilot(line.split(":"));
+					await pilot.update(line.split(":"));
 					pilots.set(pilot.callsign, pilot);
 				} else {
 					pilots.get(line[0]).update(line);
@@ -122,13 +123,6 @@ class VatsimPilot extends VatsimUser {
 
 		const tempDep = inputArray[11];
 		const tempArr = inputArray[13];
-
-		if(tempDep != "" && tempArr != "") {
-			this.getAirports(tempDep, tempArr);
-		}
-
-		this.updateInfo(inputArray);
-		//
 	}
 
 	async getAirports(dep, arr) {
@@ -208,7 +202,7 @@ class VatsimPilot extends VatsimUser {
 			&& tempDep != "" && tempArr != "") {
 			this.departed = false;
 			this.arrived = false;
-			this.getAirports(tempDep, tempArr);
+			await this.getAirports(tempDep, tempArr);
 		}
 		else if (!this.airportDetectionFailed) {
 			this.updateDepartureArrival();

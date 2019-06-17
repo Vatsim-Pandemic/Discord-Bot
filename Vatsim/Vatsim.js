@@ -15,10 +15,12 @@ let statusData;
 
 let vatsimTimer;
 
+let pilotUpdateCallback;
+
 /**
  * Use the Vatsim link to get all of the links which we can get information from.
  */
-async function init() {
+async function init(callback) {
 	try {
 		statusData = await getWebsiteData(vatsimStatus.host, vatsimStatus.path);
 	} catch(err) {
@@ -41,10 +43,10 @@ async function init() {
 
 	vatsimTimer = setInterval(update, TWO_MINUTE_INTERVAL);
 
+	pilotUpdateCallback = callback;
+
 	update(); //Get data from Vatsim
 }
-
-init();
 
 /**
  * Update data within each individual parser by giving a random link given by the original vatsim link
@@ -60,9 +62,11 @@ async function update(){
 		throw new Error("Could not get user data!\n" + err);
 	}
 
-	UserParser.parseURL(userData);
+	await UserParser.parseURL(userData);
 
 	console.log("Updated User Info");
+
+	if(pilotUpdateCallback) pilotUpdateCallback();
 }
 
 function getPilot(callsign){
@@ -74,6 +78,7 @@ function getPilot(callsign){
 }
 
 module.exports = {
+	init: init,
 	update: update,
 	getPilot: getPilot,
 }
