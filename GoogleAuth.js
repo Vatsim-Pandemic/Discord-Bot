@@ -91,7 +91,7 @@ async function readSheets(client, range) {
             range,
         }, (err, result) => {
             if(err) rej(err);
-            res(result);
+            res(result.data.values);
         });
     });
 }

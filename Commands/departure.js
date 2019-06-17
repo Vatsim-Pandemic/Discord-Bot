@@ -1,6 +1,6 @@
 const { PIEClient } = require("../index.js");
 const { Message, MessageEmbed } = require("discord.js");
-const { editSheets } = require("../GoogleAuth.js");
+const { editSheets, readSheets } = require("../GoogleAuth.js");
 
 module.exports = {
     name: "departure",
@@ -15,12 +15,25 @@ module.exports = {
      */
     run: async (pie, args, message) => {
         const values = [
-			[message.author.username, args[0], args[1], message.createdAt.toUTCString(), null, args[2]],
-		];
+            [message.author.username, args[0], "Offline", args[1], "", "", args[2]],
+        ];
+        
+        const rows = await readSheets(pie, "P3:X");
+
+        let firstEmpty = 3;
+
+        for(rowIndex in rows) {
+            console.log(rows);
+            if(rows[rowIndex][0] != "" && rows[rowIndex][0] != undefined) {
+                firstEmpty++;
+            } else {
+                break;
+            }
+        }
         
         // TODO: Code which puts it in the last row possible and/or checks for a not duplicate entry
         // Also - check that they are on vatsim?
-        editSheets(pie, "P6:U6", values);
+        editSheets(pie, "P" + firstEmpty + ":X" + firstEmpty, values);
 		  
     }
 }

@@ -18,25 +18,11 @@ module.exports = {
 
         let newMessage = "Current Flights:\n";
 
-        for(index in flights.data.values){
-            const row = flights.data.values[index];            
+        for(index in flights){
+            const row = flights[index];            
 
-            if((row[6] == undefined || row[6] == "") && row[0] != undefined){
-
-                let pilot, online, status;
-
-                try {
-                    pilot = pie.vatsim.getPilot(row[1].toUpperCase());
-                    online = true;
-                } catch (err) {
-                    online = false;
-                }
-
-                if(!online) status = "Offline";
-                else if(!pilot.departed) status = "Pre-Takeoff";
-                else status = "InFlight";
-                
-                newMessage += `**${row[1]}**: ${row[2]} - ${row[5]} Flown by: *${row[0]}* Status: *${status}*\n`
+            if(row[0] != undefined){
+                newMessage += `**${row[1]}**: ${row[3]} - ${row[6]} Flown by: *${row[0]}* Status: *${row[2]}*\n`
             }
         }
         
