@@ -33,6 +33,17 @@ async function parseURL(url) {
 		}
 	}
 
+	let deleteCounter = 0;
+
+	pilots.forEach((value, key, map) => {
+		if(Date.now() - value.lastUpdate.getTime() > 300000) {
+			pilots.delete(key);
+			deleteCounter++;
+		}
+	});
+
+	console.log("Removed " + deleteCounter + " pilots");
+
 	console.log("Updated information for " + pilotCounter + " pilots");
 }
 
