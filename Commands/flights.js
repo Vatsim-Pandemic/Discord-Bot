@@ -1,5 +1,5 @@
 const { PIEClient } = require("../index.js");
-const { Message, MessageEmbed } = require("discord.js");
+const { Message } = require("discord.js");
 const { readSheets } = require("../GoogleAuth.js");
 
 module.exports = {

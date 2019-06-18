@@ -1,11 +1,11 @@
 const { PIEClient } = require("../index.js");
-const { Message, MessageEmbed } = require("discord.js");
+const { Message } = require("discord.js");
 const { editSheets } = require("../GoogleAuth.js");
 
 module.exports = {
     name: "arrival",
     aliases: ["arr"],    
-    helpDesc: "Adds flight to flights being tracked",
+    helpDesc: "Adds Vatstats link to last flight flown by user",
     helpTitle: "Arrival",
     
     /**

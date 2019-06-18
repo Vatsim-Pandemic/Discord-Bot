@@ -17,8 +17,6 @@ class PIEClient extends Client {
 		this.vatsim = Vatsim;
 		this.util = Util;
 
-		this.vatsim.init(twoMinuteTimer);
-
 		this.once("ready", onReady);
 		this.on("message", onMessage);
 
@@ -35,13 +33,19 @@ async function onReady() {
 
 	client.sheets = google.sheets({version: 'v4', auth });
 
+	this.vatsim.init(twoMinuteTimer);
+
 	console.log('Ready!');
 }
 
 function onMessage(message) {
-	if (!message.content.startsWith(prefix) || message.author.bot) return;
+	if ((!message.content.startsWith(prefix) && !message.content.startsWith(client.user)) || message.author.bot) return;
 
 	const args = message.content.slice(prefix.length).split(/ +/);
+
+	// Shift arguments if bot is triggered by a mention rather than with the prefix
+	if(message.content.startsWith(client.user)) args.shift();
+
 	let commandName = args.shift().toLowerCase();
 
 	// Replace the commandName with the full commandName
@@ -68,8 +72,6 @@ const INFLIGHT = "Online - In Flight";
 const ARRIVED = "Online - Arrived";
 
 async function twoMinuteTimer() {
-	
-	await Util.sleep(8000);
 	const flights = await googleAuth.readSheets(client, "P3:X");
 
 	for(index in flights){
@@ -90,8 +92,6 @@ async function twoMinuteTimer() {
 			else if(!pilot.departed) status = BEFORETO;
 			else if(!pilot.arrived) status = INFLIGHT
 			else status = ARRIVED;
-
-			if(online) console.log(pilot.departed);
 
 			if(status.toLowerCase() == row[2].toLowerCase()) continue;
 

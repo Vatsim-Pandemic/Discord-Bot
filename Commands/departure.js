@@ -1,5 +1,5 @@
 const { PIEClient } = require("../index.js");
-const { Message, MessageEmbed } = require("discord.js");
+const { Message } = require("discord.js");
 const { editSheets, readSheets } = require("../GoogleAuth.js");
 
 module.exports = {
@@ -23,7 +23,6 @@ module.exports = {
         let firstEmpty = 3;
 
         for(rowIndex in rows) {
-            console.log(rows);
             if(rows[rowIndex][0] != "" && rows[rowIndex][0] != undefined) {
                 firstEmpty++;
             } else {
