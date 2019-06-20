@@ -26,10 +26,11 @@ module.exports = {
             embed.setTitle(`${pilot.callsign} - ${pilot.realName} (${pilot.cid})`)
                 .addField("Planned Route", `${pilot.plannedDepartingAirport} - ${pilot.plannedDestinationAirport} (FL${pilot.plannedAltitude / 100})`)
                 .addField("Aircraft", pilot.plannedAircraft)
-                .addField("Altitude", pilot.altitude)
-                .addField("Has Departed?", pilot.departed)
-                .addField("Has Arrived?", pilot.arrived);
+                .addField("Altitude", pilot.altitude);
 
+            if(!pilot.airportDetectionFailed)
+                embed.addField("Has Departed?", pilot.departed)
+                .addField("Has Arrived?", pilot.arrived);
 
         message.channel.send({embed: embed});
     }
