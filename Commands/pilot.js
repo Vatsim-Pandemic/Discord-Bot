@@ -2,7 +2,6 @@ const { PIEClient } = require("../index.js");
 const { Message, MessageEmbed } = require("discord.js");
 
 module.exports = {
-    name: "pilot",
     aliases: [],    
     helpDesc: "Get a pilot from Vatsim",
     helpTitle: "Pilot <Callsign>",

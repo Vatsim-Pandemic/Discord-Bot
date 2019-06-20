@@ -32,7 +32,17 @@ function sleep(ms) {
 	});
 }
 
+function hasPilotArrived(pilotRow) {
+	return (pilotRow[8] != undefined && pilotRow[8] != "");
+}
+
+function hasPilotGaveLink(pilotRow) {
+	return (pilotRow[9] != undefined && pilotRow[9] != "");
+}
+
 module.exports = {
 	loadCommands,
 	sleep,
+	hasPilotArrived,
+	hasPilotGaveLink,
 }

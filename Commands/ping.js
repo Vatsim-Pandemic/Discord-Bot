@@ -2,7 +2,6 @@ const { PIEClient } = require("../index.js");
 const { Message } = require("discord.js");
 
 module.exports = {
-    name: "ping",
     aliases: [],
     helpDesc: "Return PIE\'s response time",
     helpTitle: "Ping",

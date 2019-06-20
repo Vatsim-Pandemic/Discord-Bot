@@ -3,7 +3,6 @@ const { Message } = require("discord.js");
 const { editSheets, readSheets } = require("../GoogleAuth.js");
 
 module.exports = {
-    name: "departure",
     aliases: ["dep"],    
     helpDesc: "Adds flight to flights being tracked",
     helpTitle: "Departure <Callsign> <Departing> <Arrival>",
@@ -15,10 +14,10 @@ module.exports = {
      */
     run: async (pie, args, message) => {
         const values = [
-            [message.author.username, args[0], "Offline", args[1], "", "", args[2]],
+            [message.author.username, message.author.id, args[0], "Offline", args[1], "", "", args[2]],
         ];
         
-        const rows = await readSheets(pie, "P3:X");
+        const rows = await readSheets(pie, "P3:AA");
 
         let firstEmpty = 3;
 
@@ -32,7 +31,7 @@ module.exports = {
         
         // TODO: Code which puts it in the last row possible and/or checks for a not duplicate entry
         // Also - check that they are on vatsim?
-        editSheets(pie, "P" + firstEmpty + ":X" + firstEmpty, values);
+        editSheets(pie, "P" + firstEmpty + ":AA" + firstEmpty, values);
 		  
     }
 }

@@ -72,17 +72,17 @@ const INFLIGHT = "Online - In Flight";
 const ARRIVED = "Online - Arrived";
 
 async function twoMinuteTimer() {
-	const flights = await googleAuth.readSheets(client, "P3:X");
+	const flights = await googleAuth.readSheets(client, "P3:AA");
 
 	for(index in flights){
 		const row = flights[index];            
 
-		if((row[7] == undefined || row[7] == "") && row[0] != undefined){
+		if((row[8] == undefined || row[8] == "") && row[0] != undefined){
 
 			let pilot, online, status;
 
 			try {
-				pilot = client.vatsim.getPilot(row[1].toUpperCase());
+				pilot = client.vatsim.getPilot(row[2].toUpperCase());
 				online = true;
 			} catch (err) {
 				online = false;
@@ -93,24 +93,24 @@ async function twoMinuteTimer() {
 			else if(!pilot.arrived) status = INFLIGHT
 			else status = ARRIVED;
 
-			if(status.toLowerCase() == row[2].toLowerCase()) continue;
+			if(status.toLowerCase() == row[3].toLowerCase()) continue;
 
-			if(row[2].toLowerCase() == OFFLINE.toLowerCase() && status.toLowerCase() == BEFORETO.toLowerCase() && !pilot.departed && !pilot.airportDetectionFailed) {
-				row[2] = BEFORETO;
+			if(row[3].toLowerCase() == OFFLINE.toLowerCase() && status.toLowerCase() == BEFORETO.toLowerCase() && !pilot.departed && !pilot.airportDetectionFailed) {
+				row[3] = BEFORETO;
 			}
-			else if(row[2].toLowerCase() == BEFORETO.toLowerCase() && status.toLowerCase() == INFLIGHT.toLowerCase() && !pilot.arrived) {
-				row[2] = INFLIGHT;	
-				row[4] = new Date().toUTCString();
+			else if(row[3].toLowerCase() == BEFORETO.toLowerCase() && status.toLowerCase() == INFLIGHT.toLowerCase() && !pilot.arrived) {
+				row[3] = INFLIGHT;	
+				row[5] = new Date().toUTCString();
 			}
 			else if(row[2].toLowerCase() == INFLIGHT.toLowerCase() && status.toLowerCase() == ARRIVED.toLowerCase()) {
-				row[2] = ARRIVED;
-				row[7] = new Date().toUTCString();
+				row[3] = ARRIVED;
+				row[8] = new Date().toUTCString();
 			}
-			else row[2] = OFFLINE;
+			else row[3] = OFFLINE;
 		}
 	}
 
-	googleAuth.editSheets(client, "P3" + ":X", flights);
+	googleAuth.editSheets(client, "P3" + ":AA", flights);
 
 	client.emit("pilotInfoUpdate");
 }

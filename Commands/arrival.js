@@ -1,9 +1,11 @@
 const { PIEClient } = require("../index.js");
 const { Message } = require("discord.js");
-const { editSheets } = require("../GoogleAuth.js");
+const { editSheets, readSheets } = require("../GoogleAuth.js");
+const { hasPilotArrived, hasPilotGaveLink } = require("../util.js");
+
+const acknowledgeMessage = " You are free to start another flight using the !dep command";
 
 module.exports = {
-    name: "arrival",
     aliases: ["arr"],    
     helpDesc: "Adds Vatstats link to last flight flown by user",
     helpTitle: "Arrival",
@@ -14,13 +16,36 @@ module.exports = {
      * @param { Message } message message
      */
     run: async (pie, args, message) => {
-        const values = [
-			[message.createdAt.toUTCString(), "Bot works"],
-		];
+        const pilotList = await readSheets (pie, "P3:AA");
+        
+        let pilot;
 
-        // TODO: Code which puts it in the last row possible and/or checks for a not duplicate entry
-        // Also - check that they are on vatsim?
-        editSheets(pie, "V6:W6", values);
-		  
+        // Get the last flight for the pilot
+        for(pilotIndex in pilotList) {
+            const row = pilotList[pilotIndex];
+
+            if(row[1] == message.author.id) {
+                pilot = row;
+            }
+        }
+
+        if(pilot == undefined) return message.reply("you have not flown yet. Please start a flight using the !dep command");
+        if(!hasPilotArrived(pilot)) return message.reply("please land before giving the vatstats link");
+
+        if(!args[0] || !(/(vatstats\.net\/flights\/\d+)(\d$)/gi.test(args[0]))) return message.reply("please provide a valid vatstats link");
+
+        // See if there was already an old link in there
+        let update = false;
+        if(pilot[9] != undefined && pilot[9] != "") update = true;
+
+        // Update array with the vatstats link
+        pilot[9] = args[0];
+
+        editSheets(pie, "P3:AA", pilotList);
+
+        //Tell user that we did put in the vatstats link into the spreadsheet.
+        if(update) message.reply("updating vatstats link." + acknowledgeMessage);
+        else message.reply("adding vatstats link." + acknowledgeMessage);
+
     }
 }

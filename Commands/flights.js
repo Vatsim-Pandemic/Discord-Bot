@@ -3,7 +3,6 @@ const { Message } = require("discord.js");
 const { readSheets } = require("../GoogleAuth.js");
 
 module.exports = {
-    name: "flights",
     aliases: [],    
     helpDesc: "Lists flights which have not arrived yet",
     helpTitle: "Flights",
@@ -22,7 +21,7 @@ module.exports = {
             const row = flights[index];            
 
             if(row[0] != undefined){
-                newMessage += `**${row[1]}**: ${row[3]} - ${row[6]} Flown by: *${row[0]}* Status: *${row[2]}*\n`
+                newMessage += `**${row[2]}**: ${row[4]} - ${row[7]} Flown by: *${row[0]}* Status: *${row[3]}*\n`
             }
         }
         

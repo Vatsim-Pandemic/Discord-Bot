@@ -3,7 +3,6 @@ const { Message } = require("discord.js");
 const { prefix } = require("../config.json");
 
 module.exports = {
-    name: "help",
     aliases: [],    
     helpDesc: "Lists commands",
     helpTitle: "Help",
