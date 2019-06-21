@@ -221,4 +221,9 @@ class VatsimPilot extends VatsimUser {
 
 		this.updateInfo(inputArray);
 	}
+
+	resetDepartStatus() {
+		this.departed = false;
+		this.arrived = false;
+	}
 }

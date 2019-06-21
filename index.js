@@ -67,6 +67,8 @@ function onMessage(message) {
 }
 
 const OFFLINE = "Offline";
+const INVALIDFP = "Online - Invalid FP";
+const INVALIDSTAT = "Online - Invalid Status";
 const BEFORETO = "Online - Before T/O";
 const INFLIGHT = "Online - In Flight";
 const ARRIVED = "Online - Arrived";
@@ -76,6 +78,8 @@ async function twoMinuteTimer() {
 	console.log("Two Minute Timer: " + new Date().toUTCString());
 	
 	const flights = await googleAuth.readSheets(client, "P3:AA");
+
+	const flightsCopy = [...flights];
 
 	for(index in flights){
 		const row = flights[index];            
@@ -96,9 +100,14 @@ async function twoMinuteTimer() {
 			else if(!pilot.arrived) status = INFLIGHT
 			else status = ARRIVED;
 
+			// Invalid flight
+			if(pilot.plannedDepartingAirport.toLowerCase() != row[4].toLowerCase()) status = INVALIDFP;
+			if(pilot.plannedDestinationAirport.toLowerCase() != row[7].toLowerCase()) status = INVALIDFP;
+
 			if(status.toLowerCase() == row[3].toLowerCase()) continue;
 
-			if(row[3].toLowerCase() == OFFLINE.toLowerCase() && status.toLowerCase() == BEFORETO.toLowerCase() && !pilot.departed && !pilot.airportDetectionFailed) {
+			if((row[3].toLowerCase() == OFFLINE.toLowerCase() || row[3].toLowerCase() == INVALIDFP.toLowerCase() || row[3].toLowerCase() == INVALIDSTAT.toLowerCase()) && status.toLowerCase() == BEFORETO.toLowerCase()
+				 && !pilot.departed && !pilot.airportDetectionFailed) {
 				row[3] = BEFORETO;
 			}
 			else if(row[3].toLowerCase() == BEFORETO.toLowerCase() && status.toLowerCase() == INFLIGHT.toLowerCase() && !pilot.arrived) {
@@ -109,11 +118,17 @@ async function twoMinuteTimer() {
 				row[3] = ARRIVED;
 				row[8] = new Date().toUTCString();
 			}
+			else if (status == INVALIDFP) row[3] = INVALIDFP;
+			else if ((row[3].toLowerCase() == OFFLINE.toLowerCase() || row[3].toLowerCase() == INVALIDFP.toLowerCase() || row[3].toLowerCase() == INVALIDSTAT.toLowerCase()) && pilot.departed) {
+				row[3] = INVALIDSTAT;  
+				pilot.resetDepartStatus();
+			}
 			else row[3] = OFFLINE;
 		}
 	}
 
-	googleAuth.editSheets(client, "P3" + ":AA", flights);
+	if(flightsCopy != flights) googleAuth.editSheets(client, "P3" + ":AA", flights);
+	else console.log("No change");
 
 	client.emit("pilotInfoUpdate");
 }
