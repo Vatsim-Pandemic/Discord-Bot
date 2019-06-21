@@ -52,6 +52,8 @@ async function init(callback) {
  * Update data within each individual parser by giving a random link given by the original vatsim link
  */
 async function update(){
+	console.log("----------------------");
+	console.log("Vatsim Update: " + new Date().toUTCString());
 	let random = Math.round(Math.random() * (clientData.length - 1));
 
 	let userData;

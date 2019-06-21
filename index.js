@@ -72,6 +72,9 @@ const INFLIGHT = "Online - In Flight";
 const ARRIVED = "Online - Arrived";
 
 async function twoMinuteTimer() {
+	console.log("----------------------");
+	console.log("Two Minute Timer: " + new Date().toUTCString());
+	
 	const flights = await googleAuth.readSheets(client, "P3:AA");
 
 	for(index in flights){
