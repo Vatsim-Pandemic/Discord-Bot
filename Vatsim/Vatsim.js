@@ -3,7 +3,7 @@ const {URL} = require('url');
 const newLine = "\u000A";
 const UserParser = require("./UserParser");
 
-const TWO_MINUTE_INTERVAL = 200000;
+const TWO_MINUTE_INTERVAL = 120000;
 
 const vatsimStatus = {
 	host: "http://status.vatsim.net",
