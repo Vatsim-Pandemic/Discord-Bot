@@ -39,7 +39,7 @@ module.exports = {
         }
 
         // Empty out the last row
-        pilotList[pilotIndex + 1] = ["","","","","","","","","","","",""];
+        pilotList[pilotList.length - 1] = ["","","","","","","","","","","",""];
 
         editSheets(pie, "P3:AA", pilotList);
 
