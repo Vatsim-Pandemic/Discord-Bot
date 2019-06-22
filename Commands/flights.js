@@ -13,15 +13,17 @@ module.exports = {
      * @param { Message } message message
      */
     run: async (pie, args, message) => {
-        const flights = await readSheets(pie, "P3:W");
+        const flights = await readSheets(pie, "P3:AA");
 
         let newMessage = "Current Flights:\n";
 
         for(index in flights){
             const row = flights[index];            
 
+            let lastAirport = row[8] != undefined && row[8] != "" ? row[8] : row[7];
+
             if(row[0] != undefined){
-                newMessage += `**${row[2]}**: ${row[4]} - ${row[7]} Flown by: *${row[0]}* Status: *${row[3]}*\n`
+                newMessage += `**${row[2]}**: ${row[4]} - ${lastAirport} Flown by: *${row[0]}* Status: *${row[3]}*\n`
             }
         }
         

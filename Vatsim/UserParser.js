@@ -149,7 +149,6 @@ class VatsimPilot extends VatsimUser {
 			return;
 		});
 		this.airportDetectionFailed = false;
-		this.updateDepartureArrival();
 	}
 
 	updateDepartureArrival() {
@@ -173,7 +172,6 @@ class VatsimPilot extends VatsimUser {
 				if(this.departed) {
 					const errLat = Math.abs(this.latitude - this.arrival.data.geo.lat);
 					const errLng = Math.abs(this.longitude - this.arrival.data.geo.lng);
-
 					this.arrived = errLat < airportTolerance && errLng < airportTolerance && this.groundspeed < 30;
 				}
 			}
@@ -215,11 +213,12 @@ class VatsimPilot extends VatsimUser {
 			this.arrived = false;
 			await this.getAirports(tempDep, tempArr);
 		}
-		else if (!this.airportDetectionFailed) {
-			this.updateDepartureArrival();
-		}
 
 		this.updateInfo(inputArray);
+		
+		if (!this.airportDetectionFailed) {
+			this.updateDepartureArrival();
+		}
 	}
 
 	resetDepartStatus() {

@@ -35,8 +35,11 @@ module.exports = {
             if(!hasPilotArrived(pilot)) return message.reply("please land and use the !arr command before trying to start another flight; additionally, you can use !cancel");
             if(!hasPilotGaveLink(pilot)) return message.reply("please use the !arr command to supply vatstats links before using this command");
 
+            // alternates
+            let lastAirport = pilot[8] != undefined && pilot[8] != "" ? pilot[8] : pilot[7];
+
             // Check that the pilot is starting from the last airport landed at
-            if(pilot[7].toUpperCase() != args[1].toUpperCase()) return message.reply("the last airport you landed at was `" + pilot[7] + "`. Please depart from the airport you last landed at");
+            if(lastAirport.toUpperCase() != args[1].toUpperCase()) return message.reply("the last airport you landed at was `" + lastAirport + "`. Please depart from the airport you last landed at");
         }
 
         // Values which go into the spreadsheet
@@ -58,6 +61,6 @@ module.exports = {
         // TODO: Code which puts it in the last row possible and/or checks for a not duplicate entry
         // Also - check that they are on vatsim?
         editSheets(pie, "P" + firstEmpty + ":AA" + firstEmpty, values);
-		  
+		message.reply("now tracking Flight " + args[0] + " from " + args[1] + " to " + args[2]);
     }
 }

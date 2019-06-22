@@ -8,6 +8,8 @@ const googleAuth = require('./GoogleAuth.js');
 
 dotenv.config();
 
+
+
 class PIEClient extends Client {
 	constructor() {
 		super();
@@ -71,7 +73,7 @@ const INVALIDFP = "Online - Invalid FP";
 const INVALIDSTAT = "Online - Invalid Status";
 const BEFORETO = "Online - Before T/O";
 const INFLIGHT = "Online - In Flight";
-const ARRIVED = "Online - Arrived";
+const ARRIVED = "Arrived";
 
 async function twoMinuteTimer() {
 	console.log("----------------------");
@@ -79,12 +81,10 @@ async function twoMinuteTimer() {
 	
 	const flights = await googleAuth.readSheets(client, "P3:AA");
 
-	const flightsCopy = [...flights];
-
 	for(index in flights){
 		const row = flights[index];            
 
-		if((row[8] == undefined || row[8] == "") && row[0] != undefined){
+		if((row[9] == undefined || row[9] == "") && row[0] != undefined){
 
 			let pilot, online, status;
 
@@ -100,9 +100,11 @@ async function twoMinuteTimer() {
 			else if(!pilot.arrived) status = INFLIGHT
 			else status = ARRIVED;
 
+			console.log(status);
+
 			// Invalid flight
-			if(pilot.plannedDepartingAirport.toLowerCase() != row[4].toLowerCase()) status = INVALIDFP;
-			if(pilot.plannedDestinationAirport.toLowerCase() != row[7].toLowerCase()) status = INVALIDFP;
+			if(online && pilot.plannedDepartingAirport.toLowerCase() != row[4].toLowerCase()) status = INVALIDFP;
+			//if(online && pilot.plannedDestinationAirport.toLowerCase() != row[7].toLowerCase()) status = INVALIDFP;
 
 			if(status.toLowerCase() == row[3].toLowerCase()) continue;
 
@@ -114,9 +116,10 @@ async function twoMinuteTimer() {
 				row[3] = INFLIGHT;	
 				row[5] = new Date().toUTCString();
 			}
-			else if(row[2].toLowerCase() == INFLIGHT.toLowerCase() && status.toLowerCase() == ARRIVED.toLowerCase()) {
+			else if(row[3].toLowerCase() == INFLIGHT.toLowerCase() && status.toLowerCase() == ARRIVED.toLowerCase() && (pilot.plannedDestinationAirport.toLowerCase() == row[7].toLowerCase() || pilot.plannedDestinationAirport.toLowerCase() == row[8].toLowerCase())) {
 				row[3] = ARRIVED;
-				row[8] = new Date().toUTCString();
+				row[9] = new Date().toUTCString();
+				row[10] = await Util.getVatstatsLink(pilot.cid, row);
 			}
 			else if (status == INVALIDFP) row[3] = INVALIDFP;
 			else if ((row[3].toLowerCase() == OFFLINE.toLowerCase() || row[3].toLowerCase() == INVALIDFP.toLowerCase() || row[3].toLowerCase() == INVALIDSTAT.toLowerCase()) && pilot.departed) {
@@ -127,8 +130,7 @@ async function twoMinuteTimer() {
 		}
 	}
 
-	if(flightsCopy != flights) googleAuth.editSheets(client, "P3" + ":AA", flights);
-	else console.log("No change");
+	googleAuth.editSheets(client, "P3" + ":AA", flights);
 
 	client.emit("pilotInfoUpdate");
 }
