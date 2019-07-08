@@ -45,6 +45,6 @@ module.exports = {
 
         //Tell user that we did put in the vatstats link into the spreadsheet.
         message.reply("Canceled flight");
-
+        pie.channels.get("507568591667855390").send(`Flight ${pilot[2]} has been cancelled`);
     }
 }

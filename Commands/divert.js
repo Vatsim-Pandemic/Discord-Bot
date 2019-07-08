@@ -42,6 +42,7 @@ module.exports = {
         // TODO: Code which puts it in the last row possible and/or checks for a not duplicate entry
         // Also - check that they are on vatsim?
         editSheets(pie, "P3:AA", rows);
-		message.reply("diverting current flight to " + row[1]);
+		message.reply("diverting current flight to " + args[0]);
+        pie.channels.get("507568591667855390").send(`Flight ${pilot[2]} is diverting to ${args[0]}`);
     }
 }

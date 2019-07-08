@@ -97,6 +97,29 @@ async function getVatstatsLink(vatsimID, row) {
 	return flightsLink;
 }
 
+/**
+ * 
+ * @param { PIEClient } client
+ * @param { String } purpose
+ * @param { String } requester 
+ * @param { String } userid 
+ */
+async function awaitUserResponse(client, purpose, requster, userid) {
+	new Promise((res) => {
+		try {
+			const user = client.users.get(userid);
+			try {
+				user.dmChannel.send(`${requster} is asking you to ${purpose} with them. Respond by sending a message which says "Yes" or "No"`);
+				
+			} catch (err) {
+				res(false);
+			}
+		} catch (err) {
+			res(false);
+		}
+	});
+}
+
 module.exports = {
 	loadCommands,
 	sleep,

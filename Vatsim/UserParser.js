@@ -1,5 +1,5 @@
 const newLine = "\u000A";
-const airportTolerance = 1 / 60;
+const airportTolerance = 1 / 30;
 const altitudeTolerance = 200;
 const FSHost = require('./FSHost.js');
 
@@ -22,12 +22,13 @@ async function parseURL(url) {
 
 			if(parsePilotController(line)) {
 				pilotCounter++;
-				if(!pilots.has(line[0])) {
-					const pilot = new VatsimPilot(line.split(":"));
-					await pilot.update(line.split(":"));
-					pilots.set(pilot.callsign, pilot);
+				const lines = line.split(":");
+				if(!pilots.has(lines[0].toLowerCase())) {
+					const pilot = new VatsimPilot(lines);
+					await pilot.update(lines);
+					pilots.set(pilot.callsign.toLowerCase(), pilot);
 				} else {
-					pilots.get(line[0]).update(line);
+					pilots.get(lines[0].toLowerCase()).update(lines);
 				}
 			}
 		}
@@ -137,17 +138,14 @@ class VatsimPilot extends VatsimUser {
 	}
 
 	async getAirports(dep, arr) {
-		if( !(this.callsign.startsWith("IHS") || this.callsign.startsWith("UNO"))) return;
-		this.departure = await FSHost.getAirport(dep).catch((err) => {
-			console.error(err);
+		try {
+			this.departure = await FSHost.getAirport(dep);
+			this.arrival = await FSHost.getAirport(arr);
+		} catch (err) {
 			this.airportDetectionFailed = true;
 			return;
-		});
-		this.arrival = await FSHost.getAirport(arr).catch((err) => {
-			console.error(err);
-			this.airportDetectionFailed = true;
-			return;
-		});
+		}
+		
 		this.airportDetectionFailed = false;
 	}
 
@@ -204,18 +202,19 @@ class VatsimPilot extends VatsimUser {
 		super.updateParent(inputArray);
 		this.lastUpdate = new Date();
 
-		const tempDep = inputArray[11];
-		const tempArr = inputArray[13];
+		const tempDep = inputArray[11].trim();
+		const tempArr = inputArray[13].trim();
 
 		if((tempDep != this.plannedDepartingAirport || tempArr != this.plannedDestinationAirport)
 			&& tempDep != "" && tempArr != "") {
+			//console.log(`New Airports detected: ${this.callsign} ${tempDep}-${tempArr} != ${this.plannedDepartingAirport}-${this.plannedDestinationAirport} AirportDetection ${this.airportDetectionFailed}`);
 			this.departed = false;
 			this.arrived = false;
 			await this.getAirports(tempDep, tempArr);
 		}
 
 		this.updateInfo(inputArray);
-		
+
 		if (!this.airportDetectionFailed) {
 			this.updateDepartureArrival();
 		}

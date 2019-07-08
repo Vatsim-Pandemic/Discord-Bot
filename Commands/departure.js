@@ -44,7 +44,7 @@ module.exports = {
 
         // Values which go into the spreadsheet
         const values = [
-            [message.author.username, message.author.id, args[0], "Offline", args[1], "", "", args[2]],
+            [message.member.nickname, message.member.id, args[0], "Offline", args[1], "", "", args[2]],
         ];
 
         let firstEmpty = 3;
@@ -61,6 +61,7 @@ module.exports = {
         // TODO: Code which puts it in the last row possible and/or checks for a not duplicate entry
         // Also - check that they are on vatsim?
         editSheets(pie, "P" + firstEmpty + ":AA" + firstEmpty, values);
-		message.reply("now tracking Flight " + args[0] + " from " + args[1] + " to " + args[2]);
+        message.reply("now tracking Flight " + args[0] + " from " + args[1] + " to " + args[2]);
+        pie.channels.get("507568591667855390").send(`Tracking flight ${args[0]} from ${args[1]} to ${args[2]} by ${message.member.toString()}`);
     }
 }

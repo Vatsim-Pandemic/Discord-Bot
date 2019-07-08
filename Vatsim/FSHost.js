@@ -1,6 +1,7 @@
 const https = require("https");
 const async = require("async");
 const Util = require("../util.js");
+const fs = require("fs");
 
 module.exports = {
 	getAirport: getAirport,
@@ -10,6 +11,22 @@ const airportMap = new Map();
 const failedAirportMap = new Map();
 const queue = async.queue(downloadAirport, 2);
 
+try{
+	airports = JSON.parse(fs.readFileSync("airports.json"));
+
+	for(airport in airports.goodAirports) {
+		//console.log(airports.goodAirports[airport]);
+		airportMap.set(airports.goodAirports[airport].data.icao, airports.goodAirports[airport]);
+	}
+
+	for(airport in airports.badAirports) {
+		failedAirportMap.set(airports.badAirports[airport], airports.badAirports[airport]);
+	}
+
+} catch (err) {
+	//console.log(err);
+	fs.writeFileSync("airports.json");
+}
 
 function downloadAirport(icao, callback) {
 	if(airportMap.has(icao)) return callback(undefined, airportMap.get(icao));
@@ -24,7 +41,20 @@ function downloadAirport(icao, callback) {
 		}
 	}
 
+	let airports = {
+		goodAirports: [],
+		badAirports: [],
+	}; 
+
+	try{
+		airports = JSON.parse(fs.readFileSync("airports.json"));
+	} catch (err) {
+		fs.writeFileSync("airports.json");
+	}
+
+
 	console.log("Retrieving Airport Info: " + icao);
+	if(icao == "?") return callback(new Error(icao + " not found"));
 
 	https.get(options, res =>{
 		let body = "";
@@ -48,10 +78,15 @@ function downloadAirport(icao, callback) {
 
 			if(body.error) {
 				failedAirportMap.set(icao, body);
+				airports.badAirports[airports.badAirports.length] = icao;
+				fs.writeFileSync("airports.json", JSON.stringify(airports));
 				return callback(new Error(icao + " not found"));
 			}
 
+			
+			airports.goodAirports[airports.goodAirports.length] = body;
 			airportMap.set(icao, body);
+			fs.writeFileSync("airports.json", JSON.stringify(airports));
 			//console.log(JSON.stringify(body));
 			return callback(undefined, body);
 		});
