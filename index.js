@@ -87,12 +87,16 @@ async function twoMinuteTimer() {
 	
 	const flights = await googleAuth.readSheets(client, "P3:AA");
 
+	let changedData = false;
+	
 	for(index in flights){
+
 		const row = flights[index];            
 
-		if((row[9] == undefined || row[9] == "") && row[0] != undefined){
+		if(row[0] != undefined && !Util.hasPilotArrived(row)){
 
 			let pilot, online, status;
+			const spreadState = row[3];
 
 			try {
 				pilot = client.vatsim.getPilot(row[2].toLowerCase());
@@ -101,76 +105,72 @@ async function twoMinuteTimer() {
 				online = false;
 			}
 
-			if(!online) status = OFFLINE;
-			else if(!pilot.departed) status = BEFORETO;
-			else if(!pilot.arrived) status = INFLIGHT
-			else status = ARRIVED;
-
-			if(online)
-				console.log("%s: Online=%s : AirportDetectionFailed=%s : Status=%s : SpreadsheetStatus=%s\n\tVatsim Route=%s-%s : Spreadsheet Route=%s-%s\n\tDeparted=%s : Arrived=%s",
-					row[2].toUpperCase(), online, pilot.airportDetectionFailed, status, row[3],
-					pilot.plannedDepartingAirport, pilot.plannedDestinationAirport, row[4].toUpperCase(), row[7].toUpperCase(),
-					pilot.departed, pilot.arrived);
-			else
+			if(!online) {
 				console.log("%s: Online=%s : Status=%s : SpreadsheetStatus=%s\n\tSpreadsheet Route=%s-%s",
-					row[2].toUpperCase(), online, status, row[3].toLowerCase(),
+					row[2].toUpperCase(), online, status, spreadState,
 					row[4].toUpperCase(), row[7].toUpperCase());
-			//if(pilot.airportDetectionFailed) client.channels.get(departureChanID).send("<@" + row[1] + ">, Invalid airport from Vatsim detected! Airports: `" + pilot.plannedDepartingAirport + " " + pilot.plannedDestinationAirport + "`. Please contact Dispatchers");
 
-			// Invalid flight
-			if(online && pilot.plannedDepartingAirport.toLowerCase() != row[4].toLowerCase() && !pilot.departed) status = INVALIDFP;
-			//if(online && pilot.plannedDestinationAirport.toLowerCase() != row[7].toLowerCase()) status = INVALIDFP;
+				status = OFFLINE;
+			}
 			
-			if(row[8] && row[8] != "")
-				flightTableString += `**${row[2]}**: ${row[4]} - ${row[7]} | Diverting to ${row[8]}\nFlown by: *${row[0]}* - Status: ${row[3]}\n`;
-			else
-				flightTableString += `**${row[2]}**: ${row[4]} - ${row[7]}\nFlown by: *${row[0]}* - Status: ${row[3]}\n`;
+			console.log("%s: Online=%s : AirportDetectionFailed=%s : Status=%s : SpreadsheetStatus=%s\n\tVatsim Route=%s-%s : Spreadsheet Route=%s-%s\n\tDeparted=%s : Arrived=%s",
+				row[2].toUpperCase(), online, pilot.airportDetectionFailed, status, spreadState,
+				pilot.plannedDepartingAirport, pilot.plannedDestinationAirport, row[4].toUpperCase(), row[7].toUpperCase(),
+				pilot.departed, pilot.arrived);
+				
+			// We don't care about these pilots - still record them though
+			// TODO: Actually put in this feature
+			if(Util.statusEqual(spreadState, JUMPSEAT) || Util.statusEqual(spreadState, COPILOT)) continue; 
 
-			if(online && pilot.airportDetectionFailed && pilot.plannedDepartingAirport == "" && pilot.plannedDestinationAirport == "") status = NO_FLIGHT_PLAN;
-			else if(online && pilot.airportDetectionFailed) status = AIRPORT_NOT_RECOGNIZED;
+			// Check for a flight plan
+			if(pilot.airportDetectionFailed && pilot.plannedDepartingAirport == "" && pilot.plannedDestinationAirport == "") {
+				status = NO_FLIGHT_PLAN;
+			
+			// If departing airport do not match, then this likely isn't the flight we are looking for
+			} else if (!Util.statusEqual(pilot.plannedDepartingAirport, row[4]) && !pilot.departed) { 
+				status = INVALIDFP;
+			
+			// Check if we have the two airports wanted
+			} else if (pilot.airportDetectionFailed) {
+				status = AIRPORT_NOT_RECOGNIZED;
 
-			if(status.toLowerCase() == row[3].toLowerCase()) continue;
-			if(row[3].toLowerCase() == JUMPSEAT.toLowerCase() || row[3].toLowerCase() == COPILOT.toLowerCase()) continue;
+			// Error checking done - Now to check current state of flight
+			} else if (Util.orStatusEqual(spreadState, OFFLINE, INVALIDFP, INVALIDSTAT, NO_FLIGHT_PLAN, AIRPORT_NOT_RECOGNIZED) && !pilot.departed) {
+				status = BEFORETO;
 
-			if(status.toLowerCase() == NO_FLIGHT_PLAN.toLowerCase()) {
-                row[3] = NO_FLIGHT_PLAN;
-                continue;
-            }
-			if(status.toLowerCase() == AIRPORT_NOT_RECOGNIZED.toLowerCase()) {
-                row[3] = AIRPORT_NOT_RECOGNIZED;
-                continue;
-            }
-            
-            if(!online) { 
-                row[3] = OFFLINE;
-                continue;
-            }
-            
-            
-			if((row[3].toLowerCase() == OFFLINE.toLowerCase() || row[3].toLowerCase() == INVALIDFP.toLowerCase() || row[3].toLowerCase() == INVALIDSTAT.toLowerCase() || row[3].toLowerCase() == NO_FLIGHT_PLAN.toLowerCase() || row[3].toLowerCase() == AIRPORT_NOT_RECOGNIZED.toLowerCase()) && status.toLowerCase() == BEFORETO.toLowerCase()
-				 && !pilot.departed && !pilot.airportDetectionFailed) {
-				row[3] = BEFORETO;
-			}
-			else if(row[3].toLowerCase() == BEFORETO.toLowerCase() && status.toLowerCase() == INFLIGHT.toLowerCase() && !pilot.arrived) {
-				row[3] = INFLIGHT;	
+			// Only go to Inflight if they were seen on the ground
+			} else if (Util.orStatusEqual(spreadState, BEFORETO, INFLIGHT) && !pilot.arrived) {
+				status = INFLIGHT;
 				row[5] = new Date().toUTCString();
-			}
-			else if(row[3].toLowerCase() == INFLIGHT.toLowerCase() && status.toLowerCase() == ARRIVED.toLowerCase() && (pilot.plannedDestinationAirport.toLowerCase() == row[7].toLowerCase() || pilot.plannedDestinationAirport.toLowerCase() == row[8].toLowerCase())) {
-				row[3] = ARRIVED;
+
+			// Only go into Arrived if they were in flight AND their arrival airports match in Vatsim & Spreadsheet
+			} else if (Util.statusEqual(spreadState, INFLIGHT) && (Util.statusEqual(pilot.plannedDestinationAirport, row[7]) || Util.statusEqual(pilot.plannedDestinationAirport, row[8]))) {
+				status = ARRIVED;
 				row[9] = new Date().toUTCString();
 				row[10] = await Util.getVatstatsLink(pilot.cid, row);
+				
+				// Check for diversion and announce arrival
 				if(row[8] && row[8] != "") 
 					client.channels.get("507568619987927040").send(`<@${row[1]}> has finished their flight from ${row[4]} to ${row[8]}`);
 				else 
 					client.channels.get("507568619987927040").send(`<@${row[1]}> has finished their flight from ${row[4]} to ${row[7]}`);
-			}
-			else if (status == INVALIDFP) row[3] = INVALIDFP;
-			else if ((row[3].toLowerCase() == OFFLINE.toLowerCase() || row[3].toLowerCase() == INVALIDFP.toLowerCase() || row[3].toLowerCase() == INVALIDSTAT.toLowerCase()) && pilot.departed) {
-				console.log(`Pilot Reset from Two minute Timer: ${row[1]}`)
-				row[3] = INVALIDSTAT;  
+
+			// If we get here, we have no clue what the pilot is doing...
+			} else {
+				status = INVALIDSTAT;
 				pilot.resetDepartStatus();
+				console.log(`Pilot Reset from Two minute Timer: ${row[1]}`);
 			}
-			else row[3] = OFFLINE;
+
+			if(!Util.statusEqual(row[3], status)) {
+				changedData = true;
+				row[3] = status;
+			}
+
+			if(row[8] && row[8] != "")
+				flightTableString += `**${row[2]}**: ${row[4]} - ${row[7]} | Diverting to ${row[8]}\nFlown by: *${row[0]}* - Status: ${row[3]}\n`;
+			else
+				flightTableString += `**${row[2]}**: ${row[4]} - ${row[7]}\nFlown by: *${row[0]}* - Status: ${row[3]}\n`;
 		} else {
 			//Check the time that they arrived. If less than 8 hours, add it to the arrived string
 			if(Date.now() - Date.parse(row[9]) < 86400000) {
@@ -182,12 +182,11 @@ async function twoMinuteTimer() {
 		}
 	}
 
-	//596427894050390036 - Message id for flight table
 	client.channels.get("596409775290450081").messages.fetch("596427894050390036").then(message => message.edit(flightTableString));
     client.channels.get("596409775290450081").messages.fetch("599600791866703908").then(message => message.edit(arrivedTableString));
 
-	googleAuth.editSheets(client, "P3" + ":AA", flights);
-
+	if(changedData) googleAuth.editSheets(client, "P3" + ":AA", flights);
+	
 	client.emit("pilotInfoUpdate");
 }
 

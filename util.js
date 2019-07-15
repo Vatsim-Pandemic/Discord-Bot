@@ -121,6 +121,18 @@ async function awaitUserResponse(client, purpose, requster, userid) {
 	});
 }
 
+function statusEqual(statusOne, statusTwo) {
+	return statusOne.toLowerCase() == statusTwo.toLowerCase();
+}
+
+function orStatusEqual(testStatus, ...statuses) {
+	for(statusIndex in statuses) {
+		if(testStatus.toLowerCase() == statuses[statusIndex].toLowerCase()) return true;
+	}
+
+	return false;
+}
+
 module.exports = {
 	loadCommands,
 	sleep,
@@ -128,4 +140,6 @@ module.exports = {
 	hasPilotGaveLink,
 	getWebsiteData,
 	getVatstatsLink,
+	statusEqual,
+	orStatusEqual,
 }
