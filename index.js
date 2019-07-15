@@ -126,16 +126,28 @@ async function twoMinuteTimer() {
 			else
 				flightTableString += `**${row[2]}**: ${row[4]} - ${row[7]}\nFlown by: *${row[0]}* - Status: ${row[3]}\n`;
 
-			if(pilot.airportDetectionFailed && pilot.plannedDepartingAirport == "" && pilot.plannedDestinationAirport == "") status = NO_FLIGHT_PLAN;
-			else if(pilot.airportDetectionFailed) status = AIRPORT_NOT_RECOGNIZED;
+			if(online && pilot.airportDetectionFailed && pilot.plannedDepartingAirport == "" && pilot.plannedDestinationAirport == "") status = NO_FLIGHT_PLAN;
+			else if(online && pilot.airportDetectionFailed) status = AIRPORT_NOT_RECOGNIZED;
 
 			if(status.toLowerCase() == row[3].toLowerCase()) continue;
 			if(row[3].toLowerCase() == JUMPSEAT.toLowerCase() || row[3].toLowerCase() == COPILOT.toLowerCase()) continue;
 
-			if(status.toLowerCase() == NO_FLIGHT_PLAN.toLowerCase()) row[3] = NO_FLIGHT_PLAN;
-			if(status.toLowerCase() == AIRPORT_NOT_RECOGNIZED.toLowerCase()) row[3] = AIRPORT_NOT_RECOGNIZED;
-
-			if((row[3].toLowerCase() == OFFLINE.toLowerCase() || row[3].toLowerCase() == INVALIDFP.toLowerCase() || row[3].toLowerCase() == INVALIDSTAT.toLowerCase()) && status.toLowerCase() == BEFORETO.toLowerCase()
+			if(status.toLowerCase() == NO_FLIGHT_PLAN.toLowerCase()) {
+                row[3] = NO_FLIGHT_PLAN;
+                continue;
+            }
+			if(status.toLowerCase() == AIRPORT_NOT_RECOGNIZED.toLowerCase()) {
+                row[3] = AIRPORT_NOT_RECOGNIZED;
+                continue;
+            }
+            
+            if(!online) { 
+                row[3] = OFFLINE;
+                continue;
+            }
+            
+            
+			if((row[3].toLowerCase() == OFFLINE.toLowerCase() || row[3].toLowerCase() == INVALIDFP.toLowerCase() || row[3].toLowerCase() == INVALIDSTAT.toLowerCase() || row[3].toLowerCase() == NO_FLIGHT_PLAN.toLowerCase() || row[3].toLowerCase() == AIRPORT_NOT_RECOGNIZED.toLowerCase()) && status.toLowerCase() == BEFORETO.toLowerCase()
 				 && !pilot.departed && !pilot.airportDetectionFailed) {
 				row[3] = BEFORETO;
 			}
@@ -171,7 +183,8 @@ async function twoMinuteTimer() {
 	}
 
 	//596427894050390036 - Message id for flight table
-	client.channels.get("596409775290450081").messages.fetch("596427894050390036").then(message => message.edit(flightTableString + arrivedTableString));
+	client.channels.get("596409775290450081").messages.fetch("596427894050390036").then(message => message.edit(flightTableString));
+    client.channels.get("596409775290450081").messages.fetch("599600791866703908").then(message => message.edit(arrivedTableString));
 
 	googleAuth.editSheets(client, "P3" + ":AA", flights);
 

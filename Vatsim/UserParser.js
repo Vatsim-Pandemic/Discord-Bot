@@ -1,5 +1,5 @@
 const newLine = "\u000A";
-const airportTolerance = 1 / 30;
+const airportTolerance = 1 / 10;
 const altitudeTolerance = 200;
 const FSHost = require('./FSHost.js');
 

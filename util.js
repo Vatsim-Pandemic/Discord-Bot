@@ -1,5 +1,6 @@
 const { readdirSync } = require('fs');
 const http = require('https');
+const {URL} = require('url');
 
 const vatstatsLink = "https://beta-api.vatstats.net/external_api/cid_profiles/";
 const vatstatsFlight = "https://vatstats.net/flights/";

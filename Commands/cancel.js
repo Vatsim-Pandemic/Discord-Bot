@@ -14,7 +14,9 @@ module.exports = {
      * @param { Message } message message
      */
     run: async (pie, args, message) => {
-        let pilotList = await readSheets (pie, "P3:AA");
+        return message.reply("currently disabled due to bugs with editing Spreadsheet. Will be fixed tomorrow hopefully.");
+        
+        let pilotList = await readSheets (pie, "P3:AB");
         
         let pilot;
         let pilotIndex = 0;

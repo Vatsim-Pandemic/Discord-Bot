@@ -24,7 +24,7 @@ try{
 	}
 
 } catch (err) {
-	//console.log(err);
+	console.log(err);
 	fs.writeFileSync("airports.json");
 }
 

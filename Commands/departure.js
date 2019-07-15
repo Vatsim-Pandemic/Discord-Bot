@@ -44,7 +44,7 @@ module.exports = {
 
         // Values which go into the spreadsheet
         const values = [
-            [message.member.nickname, message.member.id, args[0], "Offline", args[1], "", "", args[2]],
+            [message.member.displayName, message.member.id, args[0], "Offline", args[1], "", "", args[2]],
         ];
 
         let firstEmpty = 3;
