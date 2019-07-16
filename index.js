@@ -61,7 +61,7 @@ function onMessage(message) {
 	if(!command.run) return message.channel.send("Command contains no run method");
 
 	try {
-		//command.run(client, args, message);
+		command.run(client, args, message);
 	} catch (err) {
 		// TODO: Tell user that an error occured maybe?
 		console.err(err);
@@ -151,7 +151,7 @@ async function twoMinuteTimer() {
 					row[10] = await Util.getVatstatsLink(pilot.cid, row);
 					
 					// Check for diversion and announce arrival
-					//client.channels.get("507568619987927040").send(`<@${row[1]}> has finished their flight from ${row[4]} to ${ row[8] && row[8] != "" ? row[8] : row[7]}`);
+					client.channels.get("507568619987927040").send(`<@${row[1]}> has finished their flight from ${row[4]} to ${ row[8] && row[8] != "" ? row[8] : row[7]}`);
 
 				// If we get here, we have no clue what the pilot is doing...
 				} else {
@@ -188,10 +188,10 @@ async function twoMinuteTimer() {
 		
 	}
 
-	//client.channels.get("596409775290450081").messages.fetch("596427894050390036").then(message => message.edit(flightTableString));
-    //client.channels.get("596409775290450081").messages.fetch("599600791866703908").then(message => message.edit(arrivedTableString));
+	client.channels.get("596409775290450081").messages.fetch("596427894050390036").then(message => message.edit(flightTableString));
+    client.channels.get("596409775290450081").messages.fetch("599600791866703908").then(message => message.edit(arrivedTableString));
 
-	//if(changedData) googleAuth.editSheets(client, "P3" + ":AA", flights);
+	if(changedData) googleAuth.editSheets(client, "P3" + ":AA", flights);
 	
 	client.emit("pilotInfoUpdate");
 }
