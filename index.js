@@ -81,7 +81,7 @@ const NO_FLIGHT_PLAN = "No Vatsim Flightplan - Please File";
 
 async function twoMinuteTimer() {
 	let flightTableString = `**__Flight Table__** - Last Updated: ${new Date().toUTCString()}\n`;
-	let arrivedTableString = "--------------------------------------\n**__Arrived flights - Past 24 Hours__**\n";
+	let arrivedTableString = "--------------------------------------\n**__Arrived flights - Past 8 Hours__**\n";
 	console.log("----------------------");
 	console.log("Two Minute Timer: " + new Date().toUTCString());
 	
@@ -174,7 +174,7 @@ async function twoMinuteTimer() {
 			
 		} else {
 			//Check the time that they arrived. If less than 8 hours, add it to the arrived string
-			if(Date.now() - Date.parse(row[9]) < 86400000) {
+			if(Date.now() - Date.parse(row[9]) < 86400000 / 3) {
 				if(row[8] && row[8] != "")
 					arrivedTableString += `**${row[2]}**: ${row[4]} - ${row[7]} | Diverted to ${row[8]}\nFlown by: *${row[0]}*\n`;
 				else 
