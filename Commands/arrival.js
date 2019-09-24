@@ -36,10 +36,10 @@ module.exports = {
 
         // See if there was already an old link in there
         let update = false;
-        if(pilot[9] != undefined && pilot[9] != "") update = true;
+        if(pilot[10] != undefined && pilot[10] != "") update = true;
 
         // Update array with the vatstats link
-        pilot[9] = args[0];
+        pilot[10] = args[0];
 
         editSheets(pie, "P3:AA", pilotList);
 

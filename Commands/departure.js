@@ -2,6 +2,7 @@ const { PIEClient } = require("../index.js");
 const { Message } = require("discord.js");
 const { editSheets, readSheets } = require("../GoogleAuth.js");
 const { hasPilotArrived, hasPilotGaveLink } = require("../util.js");
+const Vatsim = require('../Vatsim/Vatsim.js');
 
 module.exports = {
     aliases: ["dep"],    
@@ -42,9 +43,19 @@ module.exports = {
             if(lastAirport.toUpperCase() != args[1].toUpperCase()) return message.reply("the last airport you landed at was `" + lastAirport + "`. Please depart from the airport you last landed at");
         }
 
+        let online = false;
+        let vatsimPilot = {};
+
+        try {
+            let vatsimPilot = Vatsim.getPilot(args[0].toLowerCase());
+            online = true;
+        } catch (err) {
+            online = false;
+        }
+ 
         // Values which go into the spreadsheet
         const values = [
-            [message.member.displayName, message.member.id, args[0], "Offline", args[1], "", "", args[2]],
+            [message.member.displayName, message.member.id, args[0], online && !vatsimPilot.departed ? "Online - Before T/O" : "Offline", args[1], "", "", args[2]],
         ];
 
         let firstEmpty = 3;

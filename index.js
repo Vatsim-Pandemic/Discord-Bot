@@ -5,10 +5,9 @@ const Vatsim = require('./Vatsim/Vatsim.js');
 const Util = require('./util.js');
 const dotenv = require('dotenv');
 const googleAuth = require('./GoogleAuth.js');
+const request = require('request');
 
 dotenv.config();
-
-
 
 class PIEClient extends Client {
 	constructor() {
@@ -21,7 +20,7 @@ class PIEClient extends Client {
 
 		this.once("ready", onReady);
 		this.on("message", onMessage);
-
+		console.log(process.env.TOKEN);
 		this.login(process.env.TOKEN);
 	}
 }
@@ -80,8 +79,8 @@ const AIRPORT_NOT_RECOGNIZED = "Airport not recognized - Please talk to Dispatch
 const NO_FLIGHT_PLAN = "No Vatsim Flightplan - Please File";
 
 async function twoMinuteTimer() {
-	let flightTableString = `**__Flight Table__** - Last Updated: ${new Date().toUTCString()}\n`;
-	let arrivedTableString = "--------------------------------------\n**__Arrived flights - Past 8 Hours__**\n";
+	let flightTableString = `**__Flight Table__** - Last Updated: ${new Date().toUTCString()}\n\n`;
+	let arrivedTableString = "--------------------------------------\n**__Arrived flights - Past 8 Hours__**\n\n";
 	console.log("----------------------");
 	console.log("Two Minute Timer: " + new Date().toUTCString());
 	
@@ -142,7 +141,7 @@ async function twoMinuteTimer() {
 				// Only go to Inflight if they were seen on the ground
 				} else if (Util.orStatusEqual(spreadState, BEFORETO, INFLIGHT) && !pilot.arrived) {
 					status = INFLIGHT;
-					row[5] = new Date().toUTCString();
+					row[5] = row[5] == '' ? new Date().toUTCString() : row[5];
 
 				// Only go into Arrived if they were in flight AND their arrival airports match in Vatsim & Spreadsheet
 				} else if (Util.statusEqual(spreadState, INFLIGHT) && (Util.statusEqual(pilot.plannedDestinationAirport, row[7]) || Util.statusEqual(pilot.plannedDestinationAirport, row[8]))) {
@@ -192,6 +191,35 @@ async function twoMinuteTimer() {
     client.channels.get("596409775290450081").messages.fetch("599600791866703908").then(message => message.edit(arrivedTableString));
 
 	if(changedData) googleAuth.editSheets(client, "P3" + ":AA", flights);
+
+
+	// Update database with airport status levels
+	const airports = await googleAuth.readSheets(client, "A3:E");
+
+	airports.map((airport) => {
+		let airportString = "" + airport[2];
+		airportString = airportString.indexOf("=") > -1 ? airportString.split(",")[1].replace(")", "").trim() : airportString.trim();
+
+		let levelString = "" + airport[0];
+		let level = 0;
+
+
+		if(levelString.indexOf("SL") > -1) {
+			console.log(levelString);
+			level = 10;
+		} else if(levelString.indexOf("S") > -1) {
+			level = 9;
+		} else if(levelString.indexOf("L") > -1) {
+			level = Number.parseInt(levelString.replace("L", "").trim()) + 5;
+		} else {
+			level = Number.parseInt(levelString.trim());
+		}
+
+		request.post(process.env.API_URL + "/api/airports/updateAirport", {
+			headers: {'content-type' : 'application/json' },
+			body: JSON.stringify({ icao: airportString, infectionLevel: level})
+		});
+	});
 	
 	client.emit("pilotInfoUpdate");
 }
