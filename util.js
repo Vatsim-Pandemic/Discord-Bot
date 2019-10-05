@@ -4,8 +4,6 @@ const {URL} = require('url');
 
 const vatstatsLink = "https://beta-api.vatstats.net/external_api/cid_profiles/";
 const vatstatsFlight = "https://vatstats.net/flights/";
-//data = JSON.parse(await Util.getWebsiteData("https://beta-api.vatstats.net/external_api/cid_profiles/1287709/"));
-//console.log(data.last_50_flights);
 
 function loadCommands(client) {
 	client.commands.clear();
