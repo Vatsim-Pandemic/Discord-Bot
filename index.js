@@ -1,10 +1,8 @@
 const { Client, Collection } = require('discord.js');
 const { prefix } = require('./config.json');
 const Util = require('./util.js');
+const Parse = require('./parse');
 require('dotenv').config();
-const parse = require('./parse');
-
-const FLIGHT_TABLE_ID = "596409775290450081";
 
 class PIEClient extends Client {
 	constructor() {
@@ -13,7 +11,7 @@ class PIEClient extends Client {
 		this.commands = new Collection();
 		this.aliases = new Collection();
 		this.util = Util;
-		this.parse = parse;
+		this.parse = Parse;
 
 		this.once("ready", onReady);
 		this.on("message", onMessage);
@@ -25,6 +23,8 @@ const client = new PIEClient();
 
 async function onReady() {
 	client.util.loadCommands(client);
+
+	Parse.init(client);
 
 	console.log('Ready!');
 }
@@ -57,11 +57,7 @@ function onMessage(message) {
 	}
 }
 
-async function twoMinuteTimer() {
-	
-	
-}
-
-module.exports = {
-	PIEClient : PIEClient,
+module.exports.PIEClient = PIEClient;
+module.exports.getClient = function() {
+	return client;
 }
