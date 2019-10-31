@@ -12,27 +12,6 @@ module.exports = {
      * @param { Message } message message
      */
     run: async (pie, args, message) => {
-        let embed = new MessageEmbed();
-        let pilot;
-        try {
-            pilot = pie.vatsim.getPilot(args[0].toLowerCase());
-        } catch (err) {
-            //console.error(err);
-            embed.setTitle("Pilot not found!")
-            .addField(":(");
-        }
-
-        if(pilot != undefined) {
-            embed.setTitle(`${pilot.callsign} - ${pilot.realName} (${pilot.cid})`)
-                .addField("Planned Route", `${pilot.plannedDepartingAirport} - ${pilot.plannedDestinationAirport} (FL${pilot.plannedAltitude / 100})`)
-                .addField("Aircraft", pilot.plannedAircraft)
-                .addField("Altitude", pilot.altitude);
-
-            if(!pilot.airportDetectionFailed)
-                embed.addField("Has Departed?", pilot.departed)
-                .addField("Has Arrived?", pilot.arrived);
-        }
-
-        message.channel.send({embed: embed});
+        return message.reply("this is not implemented");
     }
 }
