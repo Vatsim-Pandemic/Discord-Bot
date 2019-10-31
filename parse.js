@@ -75,7 +75,7 @@ function onCreate(event) {
                 .setColor("GREEN")
                 .setThumbnail(DEPARTURE_URL);
             
-            pieDiscord.channels.get("507568591667855390").send({embed : message});
+            pieDiscord.channels.get(process.env.DEPARTURE_CHANNEL).send({embed : message});
             break;
         case "arrival":
             message.setTitle(`${event.get("callsign")} has arrived at ${event.get("arrAirport")}`)
